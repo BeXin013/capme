@@ -3,6 +3,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+// When stdout is piped and the reader closes early (e.g. `| head`),
+// Node can throw EPIPE on write. Treat it as a clean exit.
+process.stdout.on('error', (err) => {
+  if (err && err.code === 'EPIPE') process.exit(0);
+});
+
 function readPackageJson() {
   const pkgPath = path.join(__dirname, '..', 'package.json');
   return JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
